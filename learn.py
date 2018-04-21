@@ -53,7 +53,25 @@ def createRandomWord(charToInt, length):
     result += random.choice(list(charToInt.keys()))
   return result
 
-wordList = getList('/home/granor/code/magic/input_short')
+def speak(model, charToInt):
+  lastModel = stringToTrainData(createRandomWord(charToInt, longestWord), charToInt, longestWord)
+  bestResult =  [lastModel, model.score_samples([lastModel])]
+  #print(trainDataToString(lastModel, charToInt))
+  for i in range(0,25):
+    lastModel = model.gibbs(lastModel)
+    score = model.score_samples([lastModel])
+    if score > bestResult[1]:
+      bestResult = [lastModel, score]
+    print(trainDataToString(bestResult[0], charToInt) , bestResult[1])
+  return trainDataToString(bestResult[0], charToInt)
+
+def train(data, nComp, nIter):
+  X = np.array(trainData)
+  model = BernoulliRBM(n_components=nComp,n_iter=nIter,verbose=1)
+  model.fit(X)
+  return model
+
+wordList = getList('/home/granor/code/magic/humans')
 longestWord=len(max(wordList, key=len))
 charToInt = getAlphabet(wordList)
 trainData = []
@@ -61,15 +79,6 @@ trainData = []
 for line in wordList:
   trainData.append(stringToTrainData(line, charToInt, longestWord))
 
-X = np.array(trainData)
-model = BernoulliRBM(n_components=128,n_iter=200,verbose=1)
-model.fit(X)
+train(trainData, 124, 100)
 
-lastModel = stringToTrainData(createRandomWord(charToInt, longestWord), charToInt, longestWord)
-print(trainDataToString(lastModel, charToInt))
-for i in range(0,25):
-  lastModel = model.gibbs(lastModel)
-  print(trainDataToString(lastModel, charToInt))
-
-
-print(trainDataToString(lastModel, charToInt))
+print(speak(model, charToInt))
