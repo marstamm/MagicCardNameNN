@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import numpy as np
+import random
 from sklearn.neural_network import BernoulliRBM
 
 def stringToTrainData(string, charToInt, maxWordLength):
@@ -12,9 +13,9 @@ def stringToTrainData(string, charToInt, maxWordLength):
     else:
       result[i*charLength + charToInt['#']] = 1
   return result
-  
+
+
 def trainDataToString(word, charToInt):
-  print(len(word))
   size = len(charToInt)
   intToChar = dict((v,k) for k,v in charToInt.items())
   chars = [word[i:i+size] for i  in range(0, len(word), size)]
@@ -23,11 +24,11 @@ def trainDataToString(word, charToInt):
     intChar = [i for i,x in enumerate(char) if x == True]
     if (len(intChar) == 0):
       #should nor happen
-      intChar = len(intToChar) - 1
+      result += '?'
     else:
-      intChar = intChar[0]
-    result += intToChar[intChar]
+      result += intToChar[intChar[0]]
   return result
+
 
 def getAlphabet(list):
   dict = {}
@@ -40,27 +41,35 @@ def getAlphabet(list):
   dict['#'] = index
   return dict
 
+
 def getList(path):
   f=open(path)
   return [x.strip() for x in f.readlines()]
 
-list = getList('/home/granor/code/test')
-longestWord=len(max(list, key=len))
-charToInt = getAlphabet(list)
+
+def createRandomWord(charToInt, length):
+  result = ''
+  for i in range(length):
+    result += random.choice(list(charToInt.keys()))
+  return result
+
+wordList = getList('/home/granor/code/magic/input_short')
+longestWord=len(max(wordList, key=len))
+charToInt = getAlphabet(wordList)
 trainData = []
 
-for line in list:
+for line in wordList:
   trainData.append(stringToTrainData(line, charToInt, longestWord))
 
-
-
 X = np.array(trainData)
-model = BernoulliRBM(n_components=10,n_iter=10000)
+model = BernoulliRBM(n_components=128,n_iter=200,verbose=1)
 model.fit(X)
 
-lastModel = len(trainData[2])
-for i in range(0,100):
+lastModel = stringToTrainData(createRandomWord(charToInt, longestWord), charToInt, longestWord)
+print(trainDataToString(lastModel, charToInt))
+for i in range(0,25):
   lastModel = model.gibbs(lastModel)
+  print(trainDataToString(lastModel, charToInt))
 
 
 print(trainDataToString(lastModel, charToInt))
