@@ -1,1 +1,6 @@
 # Neural Network for Magic Card Names
+Data taken from  mtgjson.com
+
+This was a experiment to see if I could generate new Magic Card Names using neural networks. I got my inspiration from this Article from colin morris https://colinmorris.github.io/blog/dreaming-rbms
+
+However, I am using sklearn to train my network, which only uses the CPU and makes the hole thing kinda slow. Therefore, I suggest using subsets of the magic Cards, such as Creature Types like Dinosaurs or Humans to get a smaller sample size.
